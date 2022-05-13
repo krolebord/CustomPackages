@@ -36,6 +36,7 @@ jobs:
           "EnablePackageValidation=true"
           "RepositoryType=git"
           "RepositoryUrl=https://github.com/krolebord/CustomPackages"
+          "Product=CustomPackages.${PROJECT_NAME}"
         );
         joinedProperties=""
         for prop in ${properties[@]}
