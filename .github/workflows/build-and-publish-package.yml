@@ -24,14 +24,32 @@ jobs:
     - name: Set VERSION variable from tag
       run: echo "VERSION=${TAGNAME##*.v}" >> $GITHUB_ENV
 
+    - name: Set Project Properties
+      run: |
+        properties=(
+          "Version=${VERSION}"
+          "PackageId=Krolebord.CustomPackages.${PROJECT}"
+          "Authors=Krolebord"
+          "Company=Krolebord"
+          "EnablePackageValidation=true"
+          "RepositoryType=git"
+          "RepositoryUrl=https://github.com/krolebord/CustomPackages"
+        );
+        joinedProperties=""
+        for prop in ${properties[@]}
+        do
+          joinedProperties="${joinedProperties}-p:${prop} "
+        done
+        echo "PROPERTIES=${joinedProperties}" >> $GITHUB_ENV
+
     - name: Build
-      run: dotnet build --configuration Release /p:Version=${VERSION}
+      run: dotnet build --configuration Release ${PROPERTIES}
       working-directory: ${{ env.PROJECT }}
     - name: Test
-      run: dotnet test --configuration Release /p:Version=${VERSION} --no-build
+      run: dotnet test --configuration Release ${PROPERTIES} --no-build
       working-directory: ${{ env.PROJECT }}
     - name: Pack
-      run: dotnet pack --configuration Release /p:Version=${VERSION} --no-build --output .
+      run: dotnet pack --configuration Release ${PROPERTIES} --no-build --output .
       working-directory: ${{ env.PROJECT }}
     - name: Push
       run: dotnet nuget push **/*.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NUGET_GITHUB_TOKEN}
