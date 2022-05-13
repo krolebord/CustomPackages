@@ -19,8 +19,10 @@ jobs:
 
     - name: Set TAGNAME variable from tag
       run: echo "TAGNAME=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
-    - name: Set PROJECT variable from tag
-      run: echo "PROJECT=./CustomPackages.${TAGNAME%%.v*}" >> $GITHUB_ENV
+    - name: Set PROJECT_NAME variable from tag
+      run: echo "PROJECT_NAME=${TAGNAME%%.v*}" >> $GITHUB_ENV
+    - name: Set PROJECT_FOLDER variable from tag
+      run: echo "PROJECT_FOLDER=./CustomPackages.${PROJECT_NAME}" >> $GITHUB_ENV
     - name: Set VERSION variable from tag
       run: echo "VERSION=${TAGNAME##*.v}" >> $GITHUB_ENV
 
@@ -28,7 +30,7 @@ jobs:
       run: |
         properties=(
           "Version=${VERSION}"
-          "PackageId=Krolebord.CustomPackages.${PROJECT}"
+          "PackageId=Krolebord.CustomPackages.${PROJECT_NAME}"
           "Authors=Krolebord"
           "Company=Krolebord"
           "EnablePackageValidation=true"
@@ -43,16 +45,16 @@ jobs:
         echo "PROPERTIES=${joinedProperties}" >> $GITHUB_ENV
 
     - name: Build
-      run: dotnet build --configuration Release ${PROPERTIES}
-      working-directory: ${{ env.PROJECT }}
+      run: dotnet build --configuration Release ${{ env.PROPERTIES }}
+      working-directory: ${{ env.PROJECT_FOLDER }}
     - name: Test
-      run: dotnet test --configuration Release ${PROPERTIES} --no-build
-      working-directory: ${{ env.PROJECT }}
+      run: dotnet test --configuration Release ${{ env.PROPERTIES }} --no-build
+      working-directory: ${{ env.PROJECT_FOLDER }}
     - name: Pack
-      run: dotnet pack --configuration Release ${PROPERTIES} --no-build --output .
-      working-directory: ${{ env.PROJECT }}
+      run: dotnet pack --configuration Release ${{ env.PROPERTIES }} --no-build --output .
+      working-directory: ${{ env.PROJECT_FOLDER }}
     - name: Push
       run: dotnet nuget push **/*.${VERSION}.nupkg --source https://api.nuget.org/v3/index.json --api-key ${NUGET_GITHUB_TOKEN}
-      working-directory: ${{ env.PROJECT }}
+      working-directory: ${{ env.PROJECT_FOLDER }}
       env:
         NUGET_GITHUB_TOKEN: ${{ secrets.NUGET_GITHUB_TOKEN }}
